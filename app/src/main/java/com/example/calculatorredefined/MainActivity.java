@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         String numberEntered = btnView.getText().toString();
 
         tvExpression.setText(calculatorViewModel.changeExpression(numberEntered));
-        tvExpressionResult.setText(calculatorViewModel.changeExpressionResult());
+        tvExpressionResult.setText(calculatorViewModel.getExpressionResult());
     }
 
     public void dotClicked(View view) {
@@ -47,24 +47,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void eraseClicked(View view) {
-        String expressionText = tvExpression.getText().toString();
-        tvExpression.setText(calculatorViewModel.eraseOneCharFromExpression(expressionText));
-        tvExpressionResult.setText(calculatorViewModel.changeExpressionResult());
+        tvExpression.setText(calculatorViewModel.removeOneCharacterFromExpression());
+        tvExpressionResult.setText(calculatorViewModel.getExpressionResult());
     }
 
     public void acClicked(View view) {
-        tvExpression.setText(calculatorViewModel.clearEntireExpression());
+        tvExpression.setText(calculatorViewModel.allClear());
         tvExpressionResult.setText(calculatorViewModel.clearResult());
     }
 
     public void negateClicked(View view) {
-        tvExpression.setText(calculatorViewModel.negateExpression());
-        tvExpressionResult.setText(calculatorViewModel.changeExpressionResult());
+        tvExpression.setText(calculatorViewModel.changeSignOfANumber());
+        tvExpressionResult.setText(calculatorViewModel.getExpressionResult());
     }
 
     public void addClicked(View view) {
-        String updatedExpressionText = calculatorViewModel.getAdditionResult();
-        String updatedExpressionResultText = calculatorViewModel.changeExpressionResult();
+        String updatedExpressionText = calculatorViewModel.getExpressionAfterAdditionClicked();
+        String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
         if (updatedExpressionText != null)
             tvExpression.setText(updatedExpressionText);
@@ -73,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void subtractClicked(View view) {
-        String updatedExpressionText = calculatorViewModel.getSubtractionResult();
-        String updatedExpressionResultText = calculatorViewModel.changeExpressionResult();
+        String updatedExpressionText = calculatorViewModel.getExpressionAfterSubtractClicked();
+        String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
         if (updatedExpressionText != null)
             tvExpression.setText(updatedExpressionText);
@@ -83,8 +82,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void remainderClicked(View view) {
-        String updatedExpressionText = calculatorViewModel.getRemainderResult();
-        String updatedExpressionResultText = calculatorViewModel.changeExpressionResult();
+        String updatedExpressionText = calculatorViewModel.getExpressionAfterRemainderClicked();
+        String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
         if (updatedExpressionText != null)
             tvExpression.setText(updatedExpressionText);
@@ -93,8 +92,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void divideClicked(View view) {
-        String updatedExpressionText = calculatorViewModel.getDivisionResult();
-        String updatedExpressionResultText = calculatorViewModel.changeExpressionResult();
+        String updatedExpressionText = calculatorViewModel.getExpressionAfterDivideClicked();
+        String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
         if (updatedExpressionText != null)
             tvExpression.setText(updatedExpressionText);
@@ -103,8 +102,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void multiplyClicked(View view) {
-        String updatedExpressionText = calculatorViewModel.getMultiplyResult();
-        String updatedExpressionResultText = calculatorViewModel.changeExpressionResult();
+        String updatedExpressionText = calculatorViewModel.getExpressionAfterMultiplyClicked();
+        String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
         if (updatedExpressionText != null)
             tvExpression.setText(updatedExpressionText);

@@ -1,13 +1,240 @@
 package com.example.calculatorredefined;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
+
+import com.example.calculatorredefined.states.AddPressedState;
+import com.example.calculatorredefined.states.DividePressedState;
+import com.example.calculatorredefined.states.ErrorState;
+import com.example.calculatorredefined.states.FirstOperandInputState;
+import com.example.calculatorredefined.states.IState;
+import com.example.calculatorredefined.states.MultiplyPressedState;
+import com.example.calculatorredefined.states.RemainderPressedState;
+import com.example.calculatorredefined.states.SubtractPressedState;
 
 import java.math.BigDecimal;
 
 public class CalculatorViewModel extends ViewModel {
+    IState firstOperandInputState;
+    IState addPressedState;
+    IState subtractPressedState;
+    IState dividePressedState;
+    IState remainPressedState;
+    IState multiplyPressedState;
+    IState errorState;
 
-    private enum State {
+    IState state;
+    private boolean isDotPressed = false;
+    private String firstOperandString = "";
+    private String secondOperandString = "";
+    private String currentOperation = "";
+    private String lastSavedResult = "";
+    private BigDecimal firstNumber, secondNumber;
+
+    public CalculatorViewModel() {
+        firstOperandInputState = new FirstOperandInputState(this);
+        addPressedState = new AddPressedState(this);
+        subtractPressedState = new SubtractPressedState(this);
+        dividePressedState = new DividePressedState(this);
+        remainPressedState = new RemainderPressedState(this);
+        multiplyPressedState = new MultiplyPressedState(this);
+        errorState = new ErrorState(this);
+
+        state = firstOperandInputState;
+    }
+
+    public String changeExpression(String pressedNumber) {
+        state.pressANumber(pressedNumber);
+        return getExpression();
+    }
+
+    public String makeExpressionFractional() {
+        state.pressADot();
+        return getExpression();
+    }
+
+    public String removeOneCharacterFromExpression() {
+        state.pressClear();
+        return getExpression();
+    }
+
+    public String allClear() {
+        state.pressAllClear();
+        return getExpression();
+    }
+
+    public String clearResult() {
+        lastSavedResult = "";
+        return getExpressionResult();
+    }
+
+    public String changeSignOfANumber() {
+        state.pressASign();
+        return getExpression();
+    }
+
+    public String getExpressionAfterSubtractClicked() {
+        state.pressSubtract();
+        return getExpression();
+    }
+
+    public String getExpressionAfterAdditionClicked() {
+        state.pressAdd();
+        return getExpression();
+    }
+
+    public String getExpressionAfterDivideClicked() {
+        state.pressDivide();
+        return getExpression();
+    }
+
+    public String getExpressionAfterMultiplyClicked() {
+        state.pressMultiply();
+        return getExpression();
+    }
+
+    public String getExpressionAfterRemainderClicked() {
+        state.pressRemain();
+        return getExpression();
+    }
+
+    public String evaluateExpression() {
+        state.evaluateExpression();
+        return getExpression();
+    }
+
+    public String getExpression() {
+        return firstOperandString + currentOperation + secondOperandString;
+    }
+
+    public String getExpressionResult() {
+        return lastSavedResult;
+    }
+
+    public String getFirstOperandString() {
+        return firstOperandString;
+    }
+
+    public void setFirstOperandString(String firstOperandString) {
+        this.firstOperandString = firstOperandString;
+    }
+
+    public boolean isLastCharacterOfFirstNumberADot() {
+        return firstOperandString.endsWith(".");
+    }
+
+    public boolean isLastCharacterOfSecondNumberADot() {
+        return secondOperandString.endsWith(".");
+    }
+
+    public boolean isFirstOperandStringEmpty() {
+        return firstOperandString.isEmpty();
+    }
+
+    public boolean isSecondOperandStringEmpty() {
+        return secondOperandString.isEmpty();
+    }
+
+    public void removeLastCharacterOfFirstOperandString() {
+        firstOperandString = firstOperandString.substring(0, firstOperandString.length() - 1);
+    }
+
+    public void removeLastCharacterOfSecondOperandString() {
+        secondOperandString = secondOperandString.substring(0, secondOperandString.length() - 1);
+    }
+
+    public String getSecondOperandString() {
+        return secondOperandString;
+    }
+
+    public void setSecondOperandString(String secondOperandString) {
+        this.secondOperandString = secondOperandString;
+    }
+
+    public String getLastSavedResult() {
+        return lastSavedResult;
+    }
+
+    public void setLastSavedResult(String lastSavedResult) {
+        this.lastSavedResult = lastSavedResult;
+    }
+
+    public String getCurrentOperation() {
+        return currentOperation;
+    }
+
+    public void setCurrentOperation(String currentOperation) {
+        this.currentOperation = currentOperation;
+    }
+
+    public boolean isOperationEmpty() {
+        return currentOperation.isEmpty();
+    }
+
+    public IState getState() {
+        return state;
+    }
+
+    public void setState(IState state) {
+        this.state = state;
+    }
+
+    public BigDecimal getFirstNumber() {
+        return firstNumber;
+    }
+
+    public void setFirstNumber(BigDecimal firstNumber) {
+        this.firstNumber = firstNumber;
+    }
+
+    public BigDecimal getSecondNumber() {
+        return secondNumber;
+    }
+
+    public void setSecondNumber(BigDecimal secondNumber) {
+        this.secondNumber = secondNumber;
+    }
+
+    public boolean isDotPressed() {
+        return isDotPressed;
+    }
+
+    public void setDotPressed() {
+        isDotPressed = true;
+    }
+
+    public void setDotUnpressed() {
+        isDotPressed = false;
+    }
+
+    public IState getAddPressedState() {
+        return addPressedState;
+    }
+
+    public IState getDividePressedState() {
+        return dividePressedState;
+    }
+
+    public IState getFirstOperandInputState() {
+        return firstOperandInputState;
+    }
+
+    public IState getMultiplyPressedState() {
+        return multiplyPressedState;
+    }
+
+    public IState getRemainPressedState() {
+        return remainPressedState;
+    }
+
+    public IState getSubtractPressedState() {
+        return subtractPressedState;
+    }
+
+    public IState getErrorState() {
+        return errorState;
+    }
+
+    /*private enum State {
         FIRST_OPERAND_INPUT,
         ADD_PRESSED,
         SUBTRACT_PRESSED,
@@ -32,26 +259,28 @@ public class CalculatorViewModel extends ViewModel {
         return getExpression();
     }
 
-    public String getSubtractionResult() {
+    public String getExpressionAfterSubtract() {
         changeCalculatorStateOnSubtraction();
         return getExpression();
     }
 
-    public String getDivisionResult() {
+    public String getExpressionAfterDivision() {
         changeCalculatorStateOnDivision();
 
         if (state != State.ERROR_STATE)
             return getExpression();
-        else
-            return "Error";
+        else {
+            lastSavedResult = "Error";
+            return lastSavedResult;
+        }
     }
 
-    public String getMultiplyResult() {
+    public String getExpressionAfterMultiply() {
         changeCalculatorStateOnMultiply();
         return getExpression();
     }
 
-    public String getRemainderResult() {
+    public String getExpressionAfterRemainder() {
         changeCalculatorStateOnRemainder();
         return getExpression();
     }
@@ -120,6 +349,7 @@ public class CalculatorViewModel extends ViewModel {
             return lastSavedResult;
         } catch (ArithmeticException e) {
             state = State.ERROR_STATE;
+            lastSavedResult = "Error";
             return "Error";
         }
     }
@@ -157,13 +387,24 @@ public class CalculatorViewModel extends ViewModel {
                 secondOperandString = removeLastCharacter(secondOperandString);
                 if (secondOperandString.equals("0")) {
                     state = State.ERROR_STATE;
-                } else if (secondOperandString.length() == 0 && state == State.ERROR_STATE)
+                } else if (secondOperandString.length() == 0 && state == State.ERROR_STATE) {
                     state = getStateByOperand();
+                }
             }
+
+            if (isItASign(firstOperandString))
+                firstOperandString = "";
+            else if (isItASign(secondOperandString))
+                secondOperandString = "";
+
             saveCurrentNumbers();
         }
 
         return getExpression();
+    }
+
+    private boolean isItASign(@NonNull String expressionText) {
+        return expressionText.endsWith("-");
     }
 
     private State getStateByOperand() {
@@ -295,6 +536,7 @@ public class CalculatorViewModel extends ViewModel {
                 }
             } catch (ArithmeticException e) {
                 state = State.ERROR_STATE;
+                lastSavedResult = "Error";
                 return "Error";
             }
 
@@ -345,5 +587,5 @@ public class CalculatorViewModel extends ViewModel {
             return calculatorModel.multiply(firstNumber, secondNumber).toString();
         else
             return  "";
-    }
+    }*/
 }
