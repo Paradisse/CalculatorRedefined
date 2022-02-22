@@ -26,8 +26,9 @@ public class MultiplyPressedState implements IState {
     @Override
     public void pressASign() {
         if (!calculatorViewModel.getSecondOperandString().isEmpty()) {
-            calculatorViewModel.setSecondOperandString(CalculatorModel.negate(calculatorViewModel.getSecondNumber()).toString());
-            calculatorViewModel.setSecondNumber(new BigDecimal(calculatorViewModel.getSecondOperandString()));
+            BigDecimal negatedNumber = CalculatorModel.negate(calculatorViewModel.getSecondNumber());
+            calculatorViewModel.setSecondOperandString(negatedNumber.toString());
+            calculatorViewModel.setSecondNumber(negatedNumber);
 
             BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
             BigDecimal secondNumber = calculatorViewModel.getSecondNumber();

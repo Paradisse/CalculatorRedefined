@@ -23,7 +23,10 @@ public class FirstOperandInputState implements IState {
     @Override
     public void pressASign() {
         if (!calculatorViewModel.getFirstOperandString().isEmpty()) {
-            calculatorViewModel.setFirstOperandString(CalculatorModel.negate(calculatorViewModel.getFirstNumber()).toString());
+            BigDecimal negatedNumber = CalculatorModel.negate(calculatorViewModel.getFirstNumber());
+            calculatorViewModel.setFirstOperandString(negatedNumber.toString());
+            calculatorViewModel.setFirstNumber(negatedNumber);
+
             calculatorViewModel.setLastSavedResult(calculatorViewModel.getFirstOperandString());
         }
     }
