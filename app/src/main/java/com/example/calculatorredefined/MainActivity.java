@@ -19,18 +19,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tvExpressionResult = (TextView) findViewById(R.id.tvExpressionResult);
-        tvExpression = (TextView) findViewById(R.id.tvExpression);
+        tvExpressionResult = findViewById(R.id.tvExpressionResult);
+        tvExpression = findViewById(R.id.tvExpression);
 
         calculatorViewModel = new ViewModelProvider(this).get(CalculatorViewModel.class);
 
         String expressionText = calculatorViewModel.getExpression();
         String expressionResultText = calculatorViewModel.getExpressionResult();
 
-        if (expressionText != null) {
+        if (!expressionText.isEmpty())
             tvExpression.setText(expressionText);
-        }
-        if (expressionResultText != null)
+        if (!expressionResultText.isEmpty())
             tvExpressionResult.setText(expressionResultText);
     }
 
@@ -65,9 +64,9 @@ public class MainActivity extends AppCompatActivity {
         String updatedExpressionText = calculatorViewModel.getExpressionAfterAdditionClicked();
         String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
-        if (updatedExpressionText != null)
+        if (!updatedExpressionText.isEmpty())
             tvExpression.setText(updatedExpressionText);
-        if (updatedExpressionResultText != null)
+        if (!updatedExpressionResultText.isEmpty())
             tvExpressionResult.setText(updatedExpressionResultText);
     }
 
@@ -75,9 +74,9 @@ public class MainActivity extends AppCompatActivity {
         String updatedExpressionText = calculatorViewModel.getExpressionAfterSubtractClicked();
         String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
-        if (updatedExpressionText != null)
+        if (!updatedExpressionText.isEmpty())
             tvExpression.setText(updatedExpressionText);
-        if (updatedExpressionResultText != null)
+        if (!updatedExpressionResultText.isEmpty())
             tvExpressionResult.setText(updatedExpressionResultText);
     }
 
@@ -85,9 +84,9 @@ public class MainActivity extends AppCompatActivity {
         String updatedExpressionText = calculatorViewModel.getExpressionAfterRemainderClicked();
         String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
-        if (updatedExpressionText != null)
+        if (!updatedExpressionText.isEmpty())
             tvExpression.setText(updatedExpressionText);
-        if (updatedExpressionResultText != null)
+        if (!updatedExpressionResultText.isEmpty())
             tvExpressionResult.setText(updatedExpressionResultText);
     }
 
@@ -95,9 +94,9 @@ public class MainActivity extends AppCompatActivity {
         String updatedExpressionText = calculatorViewModel.getExpressionAfterDivideClicked();
         String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
-        if (updatedExpressionText != null)
+        if (!updatedExpressionText.isEmpty())
             tvExpression.setText(updatedExpressionText);
-        if (updatedExpressionResultText != null)
+        if (!updatedExpressionResultText.isEmpty())
             tvExpressionResult.setText(updatedExpressionResultText);
     }
 
@@ -105,18 +104,20 @@ public class MainActivity extends AppCompatActivity {
         String updatedExpressionText = calculatorViewModel.getExpressionAfterMultiplyClicked();
         String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
-        if (updatedExpressionText != null)
+        if (!updatedExpressionText.isEmpty())
             tvExpression.setText(updatedExpressionText);
-        if (updatedExpressionResultText != null)
+        if (!updatedExpressionResultText.isEmpty())
             tvExpressionResult.setText(updatedExpressionResultText);
     }
 
     public void evaluateClicked(View view) {
         String updatedExpressionText = calculatorViewModel.evaluateExpression();
+        String updatedExpressionResultText = calculatorViewModel.getExpressionResult();
 
-        if (updatedExpressionText != null) {
+        if (!updatedExpressionText.isEmpty()) {
             tvExpression.setText(updatedExpressionText);
-            tvExpressionResult.setText(calculatorViewModel.clearResult());
         }
+        if (!updatedExpressionResultText.isEmpty())
+            tvExpressionResult.setText(updatedExpressionResultText);
     }
 }

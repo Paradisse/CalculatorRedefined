@@ -5,241 +5,218 @@ import com.example.calculatorredefined.CalculatorViewModel;
 
 import java.math.BigDecimal;
 
-public class DividePressedState implements IState {
-    CalculatorViewModel calculatorViewModel;
-
-    public DividePressedState(CalculatorViewModel calculatorViewModel) {
-        this.calculatorViewModel = calculatorViewModel;
+public class DividePressedState extends State {
+    public DividePressedState(State state) {
+        super(state);
     }
 
     @Override
-    public void pressANumber(String numberPressed) {
-        calculatorViewModel.setSecondOperandString(calculatorViewModel.getSecondOperandString() + numberPressed);
-        calculatorViewModel.setSecondNumber(new BigDecimal(calculatorViewModel.getSecondOperandString()));
-
-        BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-        BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
-        BigDecimal divisionResult = CalculatorModel.divide(firstNumber, secondNumber);
-        calculatorViewModel.setLastSavedResult(divisionResult.toString());
+    public void pressANumber(String pressedNumber) {
+        secondNumberString += pressedNumber;
+        secondNumber = new BigDecimal(secondNumberString);
     }
 
     @Override
-    public void pressASign() {
-        if (!calculatorViewModel.getSecondOperandString().isEmpty()) {
-            BigDecimal negatedNumber = CalculatorModel.negate(calculatorViewModel.getSecondNumber());
-            calculatorViewModel.setSecondOperandString(negatedNumber.toString());
-            calculatorViewModel.setSecondNumber(negatedNumber);
-
-            BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-            BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
-            BigDecimal divisionResult = CalculatorModel.divide(firstNumber, secondNumber);
-            calculatorViewModel.setLastSavedResult(divisionResult.toString());
+    public void changeSign() {
+        if (secondNumber != null) {
+            secondNumber = CalculatorModel.negate(secondNumber);
+            secondNumberString = secondNumber.toString();
         }
     }
 
     @Override
     public void pressADot() {
-        if (!calculatorViewModel.isDotPressed()) {
-            calculatorViewModel.setDotPressed();
+        if (!isDotPressed) {
+            isDotPressed = true;
 
-            if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-                calculatorViewModel.setSecondOperandString(calculatorViewModel.getSecondOperandString() + '.');
-            } else {
-                calculatorViewModel.setSecondOperandString(calculatorViewModel.getSecondOperandString() + "0.");
-            }
-
-            calculatorViewModel.setSecondNumber(new BigDecimal(calculatorViewModel.getSecondOperandString()));
-
-            BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-            BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
-            BigDecimal divisionResult = CalculatorModel.divide(firstNumber, secondNumber);
-            calculatorViewModel.setLastSavedResult(divisionResult.toString());
+            if (secondNumberString.isEmpty())
+                secondNumberString += '0';
+            secondNumberString += '.';
         }
     }
 
     @Override
     public void pressAllClear() {
-        calculatorViewModel.setState(calculatorViewModel.getFirstOperandInputState());
-        calculatorViewModel.setDotUnpressed();
-        calculatorViewModel.setCurrentOperation("");
-        calculatorViewModel.setFirstOperandString("");
-        calculatorViewModel.setSecondOperandString("");
-        calculatorViewModel.setLastSavedResult("");
+        isDotPressed = false;
+        firstNumber = null;
+        secondNumber = null;
+        firstNumberString = "";
+        secondNumberString = "";
+        lastResult = null;
+        lastResultString = "";
+        currentOperation = "";
+
+        calculatorStatesHolder.changeState(new FirstOperandInputState(this));
     }
 
     @Override
     public void pressClear() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-            if (calculatorViewModel.isLastCharacterOfSecondNumberADot())
-                calculatorViewModel.setDotUnpressed();
+        if (secondNumberString.length() > 1) {
+            if (secondNumberString.endsWith("."))
+                isDotPressed = false;
 
-            calculatorViewModel.removeLastCharacterOfSecondOperandString();
-
-            try {
-                if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-                    calculatorViewModel.setSecondNumber(new BigDecimal(calculatorViewModel.getSecondOperandString()));
-
-                    BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-                    BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
-                    BigDecimal divisionResult = CalculatorModel.divide(firstNumber, secondNumber);
-                    calculatorViewModel.setLastSavedResult(divisionResult.toString());
-
-                } else {
-                    calculatorViewModel.setLastSavedResult(calculatorViewModel.getFirstOperandString());
-                }
-            } catch (ArithmeticException e) {
-                pressAllClear();
-                calculatorViewModel.setState(calculatorViewModel.getErrorState());
-                calculatorViewModel.setLastSavedResult("Error");
-            }
-        } else if (!calculatorViewModel.isOperationEmpty()) {
-            calculatorViewModel.setCurrentOperation("");
-            calculatorViewModel.setState(calculatorViewModel.getFirstOperandInputState());
+            secondNumberString = removeLastCharacter(secondNumberString);
+            if (secondNumberString.equals("-"))
+                secondNumberString = removeLastCharacter(secondNumberString);
+            else
+                secondNumber = new BigDecimal(secondNumberString);
+        } else if (!secondNumberString.isEmpty()) {
+            secondNumber = null;
+            secondNumberString = "";
+        } else {
+            currentOperation = "";
+            calculatorStatesHolder.changeState(new FirstOperandInputState(this));
         }
     }
 
     @Override
     public void evaluateExpression() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
+        if (!secondNumberString.isEmpty()) {
             try {
-                calculatorViewModel.setState(calculatorViewModel.getFirstOperandInputState());
-
-                BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-                BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
                 BigDecimal divisionResult = CalculatorModel.divide(firstNumber, secondNumber);
-                calculatorViewModel.setSecondOperandString("");
-                calculatorViewModel.setCurrentOperation("");
-                calculatorViewModel.setLastSavedResult(divisionResult.toString());
-                calculatorViewModel.setFirstOperandString(divisionResult.toString());
-                calculatorViewModel.setFirstNumber(divisionResult);
-                calculatorViewModel.setLastSavedResult(divisionResult.toString());
+
+                firstNumber = divisionResult;
+                firstNumberString = divisionResult.toString();
+                secondNumber = null;
+                secondNumberString = "";
+                lastResult = divisionResult;
+                lastResultString = divisionResult.toString();
+                currentOperation = "";
+
+                calculatorStatesHolder.changeState(new FirstOperandInputState(this));
             } catch (ArithmeticException e) {
-                pressAllClear();
-                calculatorViewModel.setState(calculatorViewModel.getErrorState());
-                calculatorViewModel.setLastSavedResult("Error");
+                lastResult = null;
+                lastResultString = "Error";
+                calculatorStatesHolder.changeState(new ErrorState(this));
             }
         }
     }
 
     @Override
     public void pressAdd() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
+        if (!secondNumberString.isEmpty()) {
             try {
-                BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-                BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
                 BigDecimal divisionResult = CalculatorModel.divide(firstNumber, secondNumber);
 
-                calculatorViewModel.setLastSavedResult(divisionResult.toString());
-                calculatorViewModel.setFirstOperandString(divisionResult.toString());
-                calculatorViewModel.setFirstNumber(divisionResult);
-                calculatorViewModel.setSecondOperandString("");
-                calculatorViewModel.setCurrentOperation("+");
-                calculatorViewModel.setDotUnpressed();
+                firstNumber = divisionResult;
+                firstNumberString = divisionResult.toString();
+                secondNumber = null;
+                secondNumberString = "";
+                lastResult = divisionResult;
+                lastResultString = divisionResult.toString();
+                currentOperation = "+";
+                isDotPressed = false;
+
+                calculatorStatesHolder.changeState(new AddPressedState(this));
             } catch (ArithmeticException e) {
-                pressAllClear();
-                calculatorViewModel.setState(calculatorViewModel.getErrorState());
-                calculatorViewModel.setLastSavedResult("Error");
+                lastResult = null;
+                lastResultString = "Error";
+                calculatorStatesHolder.changeState(new ErrorState(this));
             }
         } else {
-            calculatorViewModel.setCurrentOperation("+");
+            currentOperation = "+";
         }
     }
 
     @Override
     public void pressSubtract() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
+        if (!secondNumberString.isEmpty()) {
             try {
-                BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-                BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
                 BigDecimal divisionResult = CalculatorModel.divide(firstNumber, secondNumber);
 
-                calculatorViewModel.setLastSavedResult(divisionResult.toString());
-                calculatorViewModel.setFirstOperandString(divisionResult.toString());
-                calculatorViewModel.setFirstNumber(divisionResult);
-                calculatorViewModel.setSecondOperandString("");
-                calculatorViewModel.setCurrentOperation("-");
-                calculatorViewModel.setDotUnpressed();
-                calculatorViewModel.setState(calculatorViewModel.getSubtractPressedState());
+                firstNumber = divisionResult;
+                firstNumberString = divisionResult.toString();
+                secondNumber = null;
+                secondNumberString = "";
+                lastResult = divisionResult;
+                lastResultString = divisionResult.toString();
+                currentOperation = "-";
+                isDotPressed = false;
+
+                calculatorStatesHolder.changeState(new SubtractPressedState(this));
             } catch (ArithmeticException e) {
-                pressAllClear();
-                calculatorViewModel.setState(calculatorViewModel.getErrorState());
-                calculatorViewModel.setLastSavedResult("Error");
+                lastResult = null;
+                lastResultString = "Error";
+                calculatorStatesHolder.changeState(new ErrorState(this));
             }
         } else {
-            calculatorViewModel.setCurrentOperation("-");
+            currentOperation = "-";
         }
     }
 
     @Override
     public void pressDivide() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
+        if (!secondNumberString.isEmpty()) {
             try {
-                BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-                BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
                 BigDecimal divisionResult = CalculatorModel.divide(firstNumber, secondNumber);
 
-                calculatorViewModel.setLastSavedResult(divisionResult.toString());
-                calculatorViewModel.setFirstOperandString(divisionResult.toString());
-                calculatorViewModel.setFirstNumber(divisionResult);
-                calculatorViewModel.setSecondOperandString("");
-                calculatorViewModel.setCurrentOperation("÷");
-                calculatorViewModel.setDotUnpressed();
-                calculatorViewModel.setState(calculatorViewModel.getDividePressedState());
+                firstNumber = divisionResult;
+                firstNumberString = divisionResult.toString();
+                secondNumber = null;
+                secondNumberString = "";
+                lastResult = divisionResult;
+                lastResultString = divisionResult.toString();
+                currentOperation = "÷";
+                isDotPressed = false;
             } catch (ArithmeticException e) {
-                pressAllClear();
-                calculatorViewModel.setState(calculatorViewModel.getErrorState());
-                calculatorViewModel.setLastSavedResult("Error");
+                lastResult = null;
+                lastResultString = "Error";
+                calculatorStatesHolder.changeState(new ErrorState(this));
             }
         }
     }
 
     @Override
     public void pressRemain() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
+        if (!secondNumberString.isEmpty()) {
             try {
-                BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-                BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
                 BigDecimal divisionResult = CalculatorModel.divide(firstNumber, secondNumber);
 
-                calculatorViewModel.setLastSavedResult(divisionResult.toString());
-                calculatorViewModel.setFirstOperandString(divisionResult.toString());
-                calculatorViewModel.setFirstNumber(divisionResult);
-                calculatorViewModel.setSecondOperandString("");
-                calculatorViewModel.setCurrentOperation("%");
-                calculatorViewModel.setDotUnpressed();
-                calculatorViewModel.setState(calculatorViewModel.getRemainPressedState());
+                firstNumber = divisionResult;
+                firstNumberString = divisionResult.toString();
+                secondNumber = null;
+                secondNumberString = "";
+                lastResult = divisionResult;
+                lastResultString = divisionResult.toString();
+                currentOperation = "%";
+                isDotPressed = false;
+
+                calculatorStatesHolder.changeState(new RemainderPressedState(this));
             } catch (ArithmeticException e) {
-                pressAllClear();
-                calculatorViewModel.setState(calculatorViewModel.getErrorState());
-                calculatorViewModel.setLastSavedResult("Error");
+                lastResult = null;
+                lastResultString = "Error";
+                calculatorStatesHolder.changeState(new ErrorState(this));
             }
         } else {
-            calculatorViewModel.setCurrentOperation("%");
+            currentOperation = "%";
+            calculatorStatesHolder.changeState(new RemainderPressedState(this));
         }
     }
 
     @Override
     public void pressMultiply() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
+        if (!secondNumberString.isEmpty()) {
             try {
-                BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-                BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
                 BigDecimal divisionResult = CalculatorModel.divide(firstNumber, secondNumber);
 
-                calculatorViewModel.setLastSavedResult(divisionResult.toString());
-                calculatorViewModel.setFirstOperandString(divisionResult.toString());
-                calculatorViewModel.setFirstNumber(divisionResult);
-                calculatorViewModel.setSecondOperandString("");
-                calculatorViewModel.setCurrentOperation("×");
-                calculatorViewModel.setDotUnpressed();
-                calculatorViewModel.setState(calculatorViewModel.getMultiplyPressedState());
+                firstNumber = divisionResult;
+                firstNumberString = divisionResult.toString();
+                secondNumber = null;
+                secondNumberString = "";
+                lastResult = divisionResult;
+                lastResultString = divisionResult.toString();
+                currentOperation = "×";
+                isDotPressed = false;
+
+                calculatorStatesHolder.changeState(new MultiplyPressedState(this));
             } catch (ArithmeticException e) {
-                pressAllClear();
-                calculatorViewModel.setState(calculatorViewModel.getErrorState());
-                calculatorViewModel.setLastSavedResult("Error");
+                lastResult = null;
+                lastResultString = "Error";
+                calculatorStatesHolder.changeState(new ErrorState(this));
             }
         } else {
-            calculatorViewModel.setCurrentOperation("×");
+            currentOperation = "×";
+            calculatorStatesHolder.changeState(new MultiplyPressedState(this));
         }
     }
 }

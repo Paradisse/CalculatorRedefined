@@ -5,199 +5,184 @@ import com.example.calculatorredefined.CalculatorViewModel;
 
 import java.math.BigDecimal;
 
-public class MultiplyPressedState implements IState {
-    CalculatorViewModel calculatorViewModel;
-
-    public MultiplyPressedState(CalculatorViewModel calculatorViewModel) {
-        this.calculatorViewModel = calculatorViewModel;
+public class MultiplyPressedState extends State {
+    public MultiplyPressedState(State state) {
+        super(state);
     }
 
     @Override
-    public void pressANumber(String numberPressed) {
-        calculatorViewModel.setSecondOperandString(calculatorViewModel.getSecondOperandString() + numberPressed);
-        calculatorViewModel.setSecondNumber(new BigDecimal(calculatorViewModel.getSecondOperandString()));
-
-        BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-        BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
-        BigDecimal multiplicationResult = CalculatorModel.multiply(firstNumber, secondNumber);
-        calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
+    public void pressANumber(String pressedNumber) {
+        secondNumberString += pressedNumber;
+        secondNumber = new BigDecimal(secondNumberString);
     }
 
     @Override
-    public void pressASign() {
-        if (!calculatorViewModel.getSecondOperandString().isEmpty()) {
-            BigDecimal negatedNumber = CalculatorModel.negate(calculatorViewModel.getSecondNumber());
-            calculatorViewModel.setSecondOperandString(negatedNumber.toString());
-            calculatorViewModel.setSecondNumber(negatedNumber);
-
-            BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-            BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
-            BigDecimal multiplicationResult = CalculatorModel.multiply(firstNumber, secondNumber);
-            calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
+    public void changeSign() {
+        if (secondNumber != null) {
+            secondNumber = CalculatorModel.negate(secondNumber);
+            secondNumberString = secondNumber.toString();
         }
     }
 
     @Override
     public void pressADot() {
-        if (!calculatorViewModel.isDotPressed()) {
-            calculatorViewModel.setDotPressed();
+        if (!isDotPressed) {
+            isDotPressed = true;
 
-            if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-                calculatorViewModel.setSecondOperandString(calculatorViewModel.getSecondOperandString() + '.');
-            } else {
-                calculatorViewModel.setSecondOperandString(calculatorViewModel.getSecondOperandString() + "0.");
-            }
-
-            calculatorViewModel.setSecondNumber(new BigDecimal(calculatorViewModel.getSecondOperandString()));
-
-            BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-            BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
-            BigDecimal multiplicationResult = CalculatorModel.multiply(firstNumber, secondNumber);
-            calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
+            if (secondNumberString.isEmpty())
+                secondNumberString += '0';
+            secondNumberString += '.';
         }
     }
 
     @Override
     public void pressAllClear() {
-        calculatorViewModel.setState(calculatorViewModel.getFirstOperandInputState());
-        calculatorViewModel.setDotUnpressed();
-        calculatorViewModel.setCurrentOperation("");
-        calculatorViewModel.setFirstOperandString("");
-        calculatorViewModel.setSecondOperandString("");
-        calculatorViewModel.setLastSavedResult("");
+        isDotPressed = false;
+        firstNumber = null;
+        secondNumber = null;
+        firstNumberString = "";
+        secondNumberString = "";
+        lastResult = null;
+        lastResultString = "";
+        currentOperation = "";
+
+        calculatorStatesHolder.changeState(new FirstOperandInputState(this));
     }
 
     @Override
     public void pressClear() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-            if (calculatorViewModel.isLastCharacterOfSecondNumberADot())
-                calculatorViewModel.setDotUnpressed();
+        if (secondNumberString.length() > 1) {
+            if (secondNumberString.endsWith("."))
+                isDotPressed = false;
 
-            calculatorViewModel.removeLastCharacterOfSecondOperandString();
-
-            if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-                calculatorViewModel.setSecondNumber(new BigDecimal(calculatorViewModel.getSecondOperandString()));
-
-                BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-                BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
-                BigDecimal multiplicationResult = CalculatorModel.multiply(firstNumber, secondNumber);
-                calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
-
-            } else {
-                calculatorViewModel.setLastSavedResult(calculatorViewModel.getFirstOperandString());
-            }
-        } else if (!calculatorViewModel.isOperationEmpty()) {
-            calculatorViewModel.setCurrentOperation("");
-            calculatorViewModel.setState(calculatorViewModel.getFirstOperandInputState());
+            secondNumberString = removeLastCharacter(secondNumberString);
+            if (secondNumberString.equals("-"))
+                secondNumberString = removeLastCharacter(secondNumberString);
+            else
+                secondNumber = new BigDecimal(secondNumberString);
+        } else if (!secondNumberString.isEmpty()) {
+            secondNumber = null;
+            secondNumberString = "";
+        } else {
+            currentOperation = "";
+            calculatorStatesHolder.changeState(new FirstOperandInputState(this));
         }
     }
 
     @Override
     public void evaluateExpression() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-            calculatorViewModel.setState(calculatorViewModel.getFirstOperandInputState());
-
-            BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-            BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
+        if (!secondNumberString.isEmpty()) {
             BigDecimal multiplicationResult = CalculatorModel.multiply(firstNumber, secondNumber);
-            calculatorViewModel.setSecondOperandString("");
-            calculatorViewModel.setCurrentOperation("");
-            calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
-            calculatorViewModel.setFirstOperandString(multiplicationResult.toString());
-            calculatorViewModel.setFirstNumber(multiplicationResult);
-            calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
+
+            firstNumber = multiplicationResult;
+            firstNumberString = multiplicationResult.toString();
+            secondNumber = null;
+            secondNumberString = "";
+            lastResult = multiplicationResult;
+            lastResultString = multiplicationResult.toString();
+            currentOperation = "";
+
+            calculatorStatesHolder.changeState(new FirstOperandInputState(this));
         }
     }
 
     @Override
     public void pressAdd() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-            BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-            BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
+        if (!secondNumberString.isEmpty()) {
             BigDecimal multiplicationResult = CalculatorModel.multiply(firstNumber, secondNumber);
 
-            calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
-            calculatorViewModel.setFirstOperandString(multiplicationResult.toString());
-            calculatorViewModel.setFirstNumber(multiplicationResult);
-            calculatorViewModel.setSecondOperandString("");
-            calculatorViewModel.setCurrentOperation("+");
-            calculatorViewModel.setDotUnpressed();
+            firstNumber = multiplicationResult;
+            firstNumberString = multiplicationResult.toString();
+            secondNumber = null;
+            secondNumberString = "";
+            lastResult = multiplicationResult;
+            lastResultString = multiplicationResult.toString();
+            currentOperation = "+";
+            isDotPressed = false;
+
+            calculatorStatesHolder.changeState(new AddPressedState(this));
         } else {
-            calculatorViewModel.setCurrentOperation("+");
+            currentOperation = "+";
+            calculatorStatesHolder.changeState(new AddPressedState(this));
         }
     }
 
     @Override
     public void pressSubtract() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-            BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-            BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
+        if (!secondNumberString.isEmpty()) {
             BigDecimal multiplicationResult = CalculatorModel.multiply(firstNumber, secondNumber);
 
-            calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
-            calculatorViewModel.setFirstOperandString(multiplicationResult.toString());
-            calculatorViewModel.setFirstNumber(multiplicationResult);
-            calculatorViewModel.setSecondOperandString("");
-            calculatorViewModel.setCurrentOperation("-");
-            calculatorViewModel.setDotUnpressed();
-            calculatorViewModel.setState(calculatorViewModel.getSubtractPressedState());
+            firstNumber = multiplicationResult;
+            firstNumberString = multiplicationResult.toString();
+            secondNumber = null;
+            secondNumberString = "";
+            lastResult = multiplicationResult;
+            lastResultString = multiplicationResult.toString();
+            currentOperation = "-";
+            isDotPressed = false;
+
+            calculatorStatesHolder.changeState(new SubtractPressedState(this));
         } else {
-            calculatorViewModel.setCurrentOperation("-");
+            currentOperation = "-";
+            calculatorStatesHolder.changeState(new SubtractPressedState(this));
         }
     }
 
     @Override
     public void pressDivide() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-            BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-            BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
+        if (!secondNumberString.isEmpty()) {
             BigDecimal multiplicationResult = CalculatorModel.multiply(firstNumber, secondNumber);
 
-            calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
-            calculatorViewModel.setFirstOperandString(multiplicationResult.toString());
-            calculatorViewModel.setFirstNumber(multiplicationResult);
-            calculatorViewModel.setSecondOperandString("");
-            calculatorViewModel.setCurrentOperation("÷");
-            calculatorViewModel.setDotUnpressed();
-            calculatorViewModel.setState(calculatorViewModel.getDividePressedState());
+            firstNumber = multiplicationResult;
+            firstNumberString = multiplicationResult.toString();
+            secondNumber = null;
+            secondNumberString = "";
+            lastResult = multiplicationResult;
+            lastResultString = multiplicationResult.toString();
+            currentOperation = "÷";
+            isDotPressed = false;
+
+            calculatorStatesHolder.changeState(new DividePressedState(this));
         } else {
-            calculatorViewModel.setCurrentOperation("÷");
+            currentOperation = "÷";
+            calculatorStatesHolder.changeState(new DividePressedState(this));
         }
     }
 
     @Override
     public void pressRemain() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-            BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-            BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
+        if (!secondNumberString.isEmpty()) {
             BigDecimal multiplicationResult = CalculatorModel.multiply(firstNumber, secondNumber);
 
-            calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
-            calculatorViewModel.setFirstOperandString(multiplicationResult.toString());
-            calculatorViewModel.setFirstNumber(multiplicationResult);
-            calculatorViewModel.setSecondOperandString("");
-            calculatorViewModel.setCurrentOperation("%");
-            calculatorViewModel.setDotUnpressed();
-            calculatorViewModel.setState(calculatorViewModel.getRemainPressedState());
+            firstNumber = multiplicationResult;
+            firstNumberString = multiplicationResult.toString();
+            secondNumber = null;
+            secondNumberString = "";
+            lastResult = multiplicationResult;
+            lastResultString = multiplicationResult.toString();
+            currentOperation = "%";
+            isDotPressed = false;
+
+            calculatorStatesHolder.changeState(new RemainderPressedState(this));
         } else {
-            calculatorViewModel.setCurrentOperation("%");
+            currentOperation = "%";
+            calculatorStatesHolder.changeState(new RemainderPressedState(this));
         }
     }
 
     @Override
     public void pressMultiply() {
-        if (!calculatorViewModel.isSecondOperandStringEmpty()) {
-            BigDecimal firstNumber = calculatorViewModel.getFirstNumber();
-            BigDecimal secondNumber = calculatorViewModel.getSecondNumber();
+        if (!secondNumberString.isEmpty()) {
             BigDecimal multiplicationResult = CalculatorModel.multiply(firstNumber, secondNumber);
 
-            calculatorViewModel.setLastSavedResult(multiplicationResult.toString());
-            calculatorViewModel.setFirstOperandString(multiplicationResult.toString());
-            calculatorViewModel.setFirstNumber(multiplicationResult);
-            calculatorViewModel.setSecondOperandString("");
-            calculatorViewModel.setCurrentOperation("×");
-            calculatorViewModel.setDotUnpressed();
-            calculatorViewModel.setState(calculatorViewModel.getMultiplyPressedState());
+            firstNumber = multiplicationResult;
+            firstNumberString = multiplicationResult.toString();
+            secondNumber = null;
+            secondNumberString = "";
+            lastResult = multiplicationResult;
+            lastResultString = multiplicationResult.toString();
+            currentOperation = "×";
+            isDotPressed = false;
         }
     }
 }
